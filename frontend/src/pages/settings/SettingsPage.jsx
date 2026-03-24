@@ -1257,6 +1257,11 @@ function ThemeSection({ business }) {
     try {
       await api.put(`/business/${business._id}`, { invoiceThemes: updated });
       setThemes(updated);
+      // Sync Redux + localStorage so InvoiceCreatePage and InvoiceViewPage
+      // immediately see the new/edited themes without a page refresh
+      dispatch(
+        updateBusiness({ id: business._id, data: { invoiceThemes: updated } }),
+      );
       toast.success("Themes saved");
     } catch {
       toast.error("Failed to save themes");

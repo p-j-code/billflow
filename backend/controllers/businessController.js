@@ -1,6 +1,6 @@
-const Business = require('../models/Business');
-const User = require('../models/User');
-const { AppError } = require('../middleware/errorHandler');
+const Business = require("../models/Business");
+const User = require("../models/User");
+const { AppError } = require("../middleware/errorHandler");
 
 // @POST /api/business — Create new business
 const createBusiness = async (req, res, next) => {
@@ -16,7 +16,7 @@ const createBusiness = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Business created successfully.',
+      message: "Business created successfully.",
       data: { business },
     });
   } catch (error) {
@@ -30,7 +30,9 @@ const getMyBusinesses = async (req, res, next) => {
     const businesses = await Business.find({
       _id: { $in: req.user.businesses },
       isActive: true,
-    }).select('name gstin address.state address.city logoUrl businessType industry createdAt');
+    }).select(
+      "name gstin address.state address.city logoUrl businessType industry invoiceThemes createdAt",
+    );
 
     res.json({ success: true, data: { businesses, count: businesses.length } });
   } catch (error) {
@@ -47,7 +49,7 @@ const getBusiness = async (req, res, next) => {
     });
 
     if (!business) {
-      return next(new AppError('Business not found.', 404));
+      return next(new AppError("Business not found.", 404));
     }
 
     res.json({ success: true, data: { business } });
@@ -65,14 +67,18 @@ const updateBusiness = async (req, res, next) => {
     const business = await Business.findOneAndUpdate(
       { _id: req.params.id, ownerId: req.user._id },
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!business) {
-      return next(new AppError('Business not found or access denied.', 404));
+      return next(new AppError("Business not found or access denied.", 404));
     }
 
-    res.json({ success: true, message: 'Business updated.', data: { business } });
+    res.json({
+      success: true,
+      message: "Business updated.",
+      data: { business },
+    });
   } catch (error) {
     next(error);
   }
@@ -83,18 +89,25 @@ const updateInvoiceSeries = async (req, res, next) => {
   try {
     const { type, prefix, format } = req.body;
 
-    const business = await Business.findOne({ _id: req.params.id, ownerId: req.user._id });
-    if (!business) return next(new AppError('Business not found.', 404));
+    const business = await Business.findOne({
+      _id: req.params.id,
+      ownerId: req.user._id,
+    });
+    if (!business) return next(new AppError("Business not found.", 404));
 
-    const series = business.invoiceSeries.find(s => s.type === type);
-    if (!series) return next(new AppError('Series type not found.', 404));
+    const series = business.invoiceSeries.find((s) => s.type === type);
+    if (!series) return next(new AppError("Series type not found.", 404));
 
     if (prefix !== undefined) series.prefix = prefix;
     if (format !== undefined) series.format = format;
 
     await business.save();
 
-    res.json({ success: true, message: 'Invoice series updated.', data: { invoiceSeries: business.invoiceSeries } });
+    res.json({
+      success: true,
+      message: "Invoice series updated.",
+      data: { invoiceSeries: business.invoiceSeries },
+    });
   } catch (error) {
     next(error);
   }
@@ -103,25 +116,38 @@ const updateInvoiceSeries = async (req, res, next) => {
 // @GET /api/business/:id/next-invoice-number — Preview next invoice number
 const getNextInvoiceNumber = async (req, res, next) => {
   try {
-    const { type = 'sale' } = req.query;
-    const business = await Business.findOne({ _id: req.params.id, _id: { $in: req.user.businesses } });
-    if (!business) return next(new AppError('Business not found.', 404));
+    const { type = "sale" } = req.query;
+    const business = await Business.findOne({
+      _id: req.params.id,
+      _id: { $in: req.user.businesses },
+    });
+    if (!business) return next(new AppError("Business not found.", 404));
 
-    const series = business.invoiceSeries.find(s => s.type === type);
-    if (!series) return next(new AppError('Series not configured.', 404));
+    const series = business.invoiceSeries.find((s) => s.type === type);
+    if (!series) return next(new AppError("Series not configured.", 404));
 
     const nextNum = series.currentNumber + 1;
-    let formatted = '';
+    let formatted = "";
     const fy = series.financialYear || business.currentFinancialYear;
 
     switch (series.format) {
-      case 'NUM_FY': formatted = `${nextNum}/${fy}`; break;
-      case 'PREFIX_NUM_FY': formatted = `${series.prefix}${nextNum}/${fy}`; break;
-      case 'PREFIX_NUM': formatted = `${series.prefix}${nextNum}`; break;
-      default: formatted = `${nextNum}/${fy}`;
+      case "NUM_FY":
+        formatted = `${nextNum}/${fy}`;
+        break;
+      case "PREFIX_NUM_FY":
+        formatted = `${series.prefix}${nextNum}/${fy}`;
+        break;
+      case "PREFIX_NUM":
+        formatted = `${series.prefix}${nextNum}`;
+        break;
+      default:
+        formatted = `${nextNum}/${fy}`;
     }
 
-    res.json({ success: true, data: { nextNumber: nextNum, formatted, series } });
+    res.json({
+      success: true,
+      data: { nextNumber: nextNum, formatted, series },
+    });
   } catch (error) {
     next(error);
   }

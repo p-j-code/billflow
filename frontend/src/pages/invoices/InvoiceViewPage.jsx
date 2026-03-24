@@ -399,7 +399,11 @@ export default function InvoiceViewPage() {
               ],
               [
                 "Theme",
-                invoice.pdfTheme === "modern" ? "✨ Modern" : "📄 Traditional",
+                invoice.pdfThemeConfig?.name
+                  ? `🎨 ${invoice.pdfThemeConfig.name}`
+                  : invoice.pdfTheme === "modern"
+                    ? "✨ Modern"
+                    : "📄 Traditional",
               ],
               ...(invoice.transport ? [["Transport", invoice.transport]] : []),
               ...(invoice.poNumber ? [["PO No.", invoice.poNumber]] : []),
@@ -631,6 +635,15 @@ export default function InvoiceViewPage() {
                 party={invoice.partySnapshot}
                 taxType={invoice.taxType}
                 theme={invoice.pdfTheme || "traditional"}
+                themeConfig={
+                  invoice.pdfThemeConfig?.accentColor
+                    ? invoice.pdfThemeConfig
+                    : invoice.pdfThemeId && businessData?.invoiceThemes?.length
+                      ? (businessData.invoiceThemes.find(
+                          (t) => t.id === invoice.pdfThemeId,
+                        ) ?? null)
+                      : null
+                }
               />
             </div>
           )}
