@@ -14,8 +14,16 @@ function fmtDate(d) {
   return `${String(dt.getDate()).padStart(2,'0')}-${String(dt.getMonth()+1).padStart(2,'0')}-${dt.getFullYear()}`;
 }
 
-function traditionalTemplate(invoice, business) {
+function traditionalTemplate(invoice, business, themeConfig = null) {
   const biz   = business;
+  // ── Theme colours ──────────────────────────────────────────────────────────
+  const ACCENT  = themeConfig?.accentColor || '#000000';
+  const HDR_BG  = themeConfig?.headerBg    || '#000000';
+  const HDR_TXT = themeConfig?.headerText  || '#ffffff';
+  const FONT    = themeConfig?.fontFamily === 'serif' ? 'Georgia, serif'
+                : themeConfig?.fontFamily === 'mono'  ? '"Courier New", monospace'
+                : 'Arial, sans-serif';
+
   const party = invoice.partySnapshot;
   const items = invoice.items || [];
   const tot   = invoice.totals || {};
@@ -38,7 +46,7 @@ function traditionalTemplate(invoice, business) {
 <meta charset="UTF-8"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, sans-serif; font-size: 11px; color: #000; background: #fff; }
+  body { font-family: ${FONT}; font-size: 11px; color: #000; background: #fff; }
   .page { width: 210mm; min-height: 297mm; padding: 8mm; }
   table { width: 100%; border-collapse: collapse; }
   td, th { border: 1px solid #000; padding: 3px 5px; }
@@ -55,9 +63,9 @@ function traditionalTemplate(invoice, business) {
   .right        { text-align: right; }
   .bold         { font-weight: bold; }
   .total-row td { background: #f9f9f9; font-weight: bold; }
-  .grand-row td { background: #000; color: #fff; font-weight: bold; font-size: 13px; }
+  .grand-row td { background: ${HDR_BG}; color: ${HDR_TXT}; font-weight: bold; font-size: 13px; }
   .footer-sig   { border-top: 1px solid #000; padding-top: 4px; margin-top: 30px; text-align: center; font-size: 10px; }
-  .items-table th { font-size: 10px; padding: 4px 3px; }
+  .items-table th { background: ${HDR_BG}; color: ${HDR_TXT}; border-color: ${HDR_BG}; font-size: 10px; padding: 4px 3px; }
   .items-table td { font-size: 10px; }
 </style>
 </head>

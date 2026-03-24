@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectActiveBusiness } from "@/store/slices/businessSlice";
 import { updateInvoiceStatus } from "@/store/slices/invoiceSlice";
 import { invoiceApi, paymentApi } from "@/api";
+import api from "@/api/client";
 import PaymentModal from "@/components/payment/PaymentModal";
 import ShareInvoiceModal from "@/components/invoice/ShareInvoiceModal";
 import SendEmailModal from "@/components/invoice/SendEmailModal";
@@ -132,6 +133,49 @@ export default function InvoiceViewPage() {
       setCancelDlg(false);
     }
   };
+  const handleDownloadPdf = async () => {
+    const toastId = toast.loading("Generating PDF…");
+    try {
+      const res = await api.get(`/invoices/pdf/${id}`, {
+        responseType: "blob",
+      });
+      const contentType = res.headers["content-type"] || "";
+
+      if (contentType.includes("text/html")) {
+        // Puppeteer not available on this server — backend streamed raw HTML.
+        // Open it in a new tab so the user can use the browser's Print → Save as PDF.
+        const url = URL.createObjectURL(
+          new Blob([res.data], { type: "text/html" }),
+        );
+        const tab = window.open(url, "_blank");
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        if (!tab) {
+          toast.error("Pop-up blocked — please allow pop-ups for this site", {
+            id: toastId,
+          });
+        } else {
+          toast.success("Opened in new tab — use Print → Save as PDF", {
+            id: toastId,
+            duration: 5000,
+          });
+        }
+      } else {
+        // Real PDF from Puppeteer — trigger file download
+        const url = URL.createObjectURL(
+          new Blob([res.data], { type: "application/pdf" }),
+        );
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `invoice-${invoice.invoiceNo.replace(/\//g, "-")}.pdf`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        toast.success("PDF downloaded", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to download PDF", { id: toastId });
+    }
+  };
+
   const handleDeletePayment = async (payId) => {
     try {
       await paymentApi.delete(payId);
@@ -203,14 +247,12 @@ export default function InvoiceViewPage() {
             </button>
 
             {/* PDF download */}
-            <a
-              href={`/api/invoices/pdf/${id}`}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              onClick={handleDownloadPdf}
               className="btn-secondary text-xs flex items-center gap-1.5 py-2"
             >
               <Download size={13} /> PDF
-            </a>
+            </button>
 
             {invoice.status === "draft" && (
               <button
@@ -230,44 +272,49 @@ export default function InvoiceViewPage() {
               </button>
             )}
 
-            <div className="relative">
-              <button
-                onClick={() => setMoreOpen((o) => !o)}
-                className="btn-secondary text-xs p-2"
-              >
-                <MoreVertical size={14} />
-              </button>
-              {moreOpen && (
-                <div
-                  className="absolute right-0 top-10 z-30 bg-card border border-border rounded-xl shadow-modal w-44 py-1 animate-slide-up"
-                  onMouseLeave={() => setMoreOpen(false)}
+            {/* 3-dots — only show when there are actions available */}
+            {!["paid", "cancelled", "void"].includes(invoice.status) && (
+              <div className="relative">
+                <button
+                  onClick={() => setMoreOpen((o) => !o)}
+                  className="btn-secondary text-xs p-2"
                 >
-                  {invoice.status !== "paid" &&
-                    invoice.status !== "cancelled" && (
+                  <MoreVertical size={14} />
+                </button>
+                {moreOpen && (
+                  <div
+                    className="absolute right-0 top-10 z-30 bg-card border border-border rounded-xl shadow-modal w-44 py-1 animate-slide-up"
+                    onMouseLeave={() => setMoreOpen(false)}
+                  >
+                    {invoice.status !== "paid" &&
+                      invoice.status !== "cancelled" && (
+                        <button
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-success hover:bg-success/10"
+                          onClick={() => {
+                            handleMarkPaid();
+                            setMoreOpen(false);
+                          }}
+                        >
+                          <CheckCircle size={13} /> Mark Fully Paid
+                        </button>
+                      )}
+                    {!["cancelled", "void", "paid"].includes(
+                      invoice.status,
+                    ) && (
                       <button
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-success hover:bg-success/10"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-danger hover:bg-danger/10"
                         onClick={() => {
-                          handleMarkPaid();
+                          setCancelDlg(true);
                           setMoreOpen(false);
                         }}
                       >
-                        <CheckCircle size={13} /> Mark Fully Paid
+                        <XCircle size={13} /> Cancel Invoice
                       </button>
                     )}
-                  {!["cancelled", "void", "paid"].includes(invoice.status) && (
-                    <button
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-danger hover:bg-danger/10"
-                      onClick={() => {
-                        setCancelDlg(true);
-                        setMoreOpen(false);
-                      }}
-                    >
-                      <XCircle size={13} /> Cancel Invoice
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         }
       />

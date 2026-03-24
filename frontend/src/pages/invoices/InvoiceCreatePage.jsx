@@ -305,9 +305,18 @@ export default function InvoiceCreatePage() {
   const [notes,         setNotes]         = useState('');
   const [items,         setItems]         = useState([{ ...BLANK_ITEM }]);
   const [taxType,       setTaxType]       = useState('intra');
-  const [theme,         setTheme]         = useState('traditional');
+  const [theme,         setTheme]         = useState(() => {
+    // Auto-select the business's default custom theme, else fall back to 'traditional'
+    const saved = activeBiz?.invoiceThemes || [];
+    const def   = saved.find(t => t.isDefault);
+    return def ? def.id : 'traditional';
+  });
   const [invDiscPct,    setInvDiscPct]    = useState(0);
   const [previewFull,   setPreviewFull]   = useState(false);
+
+  // Resolved theme config (for preview)
+  const customThemes  = activeBiz?.invoiceThemes || [];
+  const resolvedTheme = customThemes.find(t => t.id === theme) || null;
 
   // Live calculated totals
   const { items: calcedItems, totals } = calcInvoiceTotals(items, taxType, Number(invDiscPct));
@@ -338,7 +347,12 @@ export default function InvoiceCreatePage() {
 
     const payload = {
       partyId: party._id, invoiceType, invoiceDate, dueDate,
-      transport, vehicleNo, poNumber, notes, taxType, pdfTheme: theme,
+      transport, vehicleNo, poNumber, notes, taxType,
+      // If a custom theme is selected, store its base template for PDF rendering
+      // and the theme ID so we can re-resolve colours later
+      pdfTheme:       resolvedTheme ? resolvedTheme.baseTemplate : theme,
+      pdfThemeId:     resolvedTheme ? resolvedTheme.id : null,
+      pdfThemeConfig: resolvedTheme || null,
       invoiceDiscountPct: Number(invDiscPct),
       items: items.map(i => ({
         description: i.description, hsnCode: i.hsnCode, lot: i.lot,
@@ -448,9 +462,20 @@ export default function InvoiceCreatePage() {
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-xs text-muted">Theme:</label>
-                <select value={theme} onChange={e => setTheme(e.target.value)} className="input-field py-1 text-xs w-32">
-                  <option value="traditional">Traditional</option>
-                  <option value="modern">Modern</option>
+                <select value={theme} onChange={e => setTheme(e.target.value)} className="input-field py-1 text-xs w-44">
+                  <optgroup label="Built-in">
+                    <option value="traditional">📄 Traditional</option>
+                    <option value="modern">✨ Modern</option>
+                  </optgroup>
+                  {customThemes.length > 0 && (
+                    <optgroup label="Custom Themes">
+                      {customThemes.map(t => (
+                        <option key={t.id} value={t.id}>
+                          🎨 {t.name}{t.isDefault ? ' ★' : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
             </div>
@@ -474,7 +499,16 @@ export default function InvoiceCreatePage() {
       </div>
 
       {/* ── RIGHT PANEL: Live Preview ── */}
-      <div className={clsx('flex flex-col transition-all duration-300', previewFull ? 'flex-1' : 'w-[45%]')}>
+      <div className={clsx('flex flex-col transition-all duration-300 relative', previewFull ? 'flex-1' : 'w-[45%]')}>
+        {/* Floating escape hatch — visible only in full-preview mode */}
+        {previewFull && (
+          <button
+            onClick={() => setPreviewFull(false)}
+            className="absolute top-3 left-3 z-20 btn-secondary text-xs flex items-center gap-1.5 py-2 shadow-lg"
+          >
+            <ArrowLeft size={13} /> Back to Form
+          </button>
+        )}
         <InvoicePreview
           invoice={{ invoiceType, invoiceDate, dueDate, transport, vehicleNo, poNumber, notes, status: 'draft' }}
           invoiceNo="Preview"
@@ -483,7 +517,8 @@ export default function InvoiceCreatePage() {
           totals={totals}
           party={partySnapshot}
           taxType={taxType}
-          theme={theme}
+          theme={resolvedTheme?.baseTemplate || theme}
+          themeConfig={resolvedTheme}
         />
       </div>
     </div>

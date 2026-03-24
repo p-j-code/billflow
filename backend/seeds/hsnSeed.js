@@ -1660,6 +1660,11 @@ async function seedHsn() {
         ...item,
         businessId: null,
         isCustom: false,
+        // pre('save') hook doesn't fire on insertMany — compute rates explicitly
+        igstRate: item.gstRate,
+        cgstRate: item.gstRate / 2,
+        sgstRate: item.gstRate / 2,
+        chapter:  item.code?.substring(0, 2) || '',
       }));
       try {
         await HsnMaster.insertMany(batch, { ordered: false });

@@ -70,6 +70,9 @@ export default function InvoiceEditPage() {
 
   const { items: calcedItems, totals } = calcInvoiceTotals(items, taxType, Number(invDiscPct));
 
+  const customThemes  = activeBiz?.invoiceThemes || [];
+  const resolvedTheme = customThemes.find(t => t.id === theme) || null;
+
   useEffect(() => {
     invoiceApi.get(id)
       .then(r => {
@@ -104,7 +107,11 @@ export default function InvoiceEditPage() {
     try {
       await api.put(`/invoices/${id}`, {
         invoiceDate, dueDate, transport, vehicleNo, poNumber, notes,
-        taxType, pdfTheme: theme, invoiceDiscountPct: Number(invDiscPct),
+        taxType,
+        pdfTheme:       resolvedTheme ? resolvedTheme.baseTemplate : theme,
+        pdfThemeId:     resolvedTheme ? resolvedTheme.id : null,
+        pdfThemeConfig: resolvedTheme || null,
+        invoiceDiscountPct: Number(invDiscPct),
         items: items.map(i => ({
           description: i.description, hsnCode: i.hsnCode, lot: i.lot,
           qty: Number(i.qty), unit: i.unit, rate: Number(i.rate),
@@ -172,9 +179,20 @@ export default function InvoiceEditPage() {
                 ))}
               </div>
               <span className="label mb-0 ml-2 mr-1">Theme</span>
-              <select value={theme} onChange={e => setTheme(e.target.value)} className="input-field py-1.5 text-xs w-32">
-                <option value="traditional">Traditional</option>
-                <option value="modern">Modern</option>
+              <select value={theme} onChange={e => setTheme(e.target.value)} className="input-field py-1.5 text-xs w-44">
+                <optgroup label="Built-in">
+                  <option value="traditional">📄 Traditional</option>
+                  <option value="modern">✨ Modern</option>
+                </optgroup>
+                {customThemes.length > 0 && (
+                  <optgroup label="Custom Themes">
+                    {customThemes.map(t => (
+                      <option key={t.id} value={t.id}>
+                        🎨 {t.name}{t.isDefault ? ' ★' : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
           </div>
@@ -267,7 +285,16 @@ export default function InvoiceEditPage() {
       </div>
 
       {/* RIGHT: Preview */}
-      <div className={clsx('flex flex-col transition-all duration-300', previewFull ? 'flex-1' : 'w-[45%]')}>
+      <div className={clsx('flex flex-col transition-all duration-300 relative', previewFull ? 'flex-1' : 'w-[45%]')}>
+        {/* Floating escape hatch — visible only in full-preview mode */}
+        {previewFull && (
+          <button
+            onClick={() => setPreviewFull(false)}
+            className="absolute top-3 left-3 z-20 btn-secondary text-xs flex items-center gap-1.5 py-2 shadow-lg"
+          >
+            <ArrowLeft size={13} /> Back to Form
+          </button>
+        )}
         <InvoicePreview
           invoice={{ invoiceType: original?.invoiceType, invoiceDate, dueDate, transport, notes, status: original?.status||'draft' }}
           invoiceNo={original?.invoiceNo || 'Edit Preview'}
@@ -276,7 +303,8 @@ export default function InvoiceEditPage() {
           totals={totals}
           party={partySnap}
           taxType={taxType}
-          theme={theme}
+          theme={resolvedTheme?.baseTemplate || theme}
+          themeConfig={resolvedTheme}
         />
       </div>
     </div>

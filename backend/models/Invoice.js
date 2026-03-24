@@ -71,7 +71,9 @@ const invoiceSchema = new mongoose.Schema({
   invoiceDiscountAmt: { type: Number, default: 0 },
   amountPaid:  { type: Number, default: 0 },
   balanceDue:  { type: Number, default: 0 },
-  pdfTheme:    { type: String, enum: ['traditional','modern'], default: 'traditional' },
+  pdfTheme:       { type: String, default: 'traditional' }, // base template key or 'traditional'/'modern'
+  pdfThemeId:     { type: String, default: null },           // custom theme UUID (from business.invoiceThemes)
+  pdfThemeConfig: { type: mongoose.Schema.Types.Mixed, default: null }, // snapshot of custom theme at save time
   pdfUrl:      { type: String },
   notes:             { type: String, trim: true },
   termsAndConditions:{ type: String, trim: true },

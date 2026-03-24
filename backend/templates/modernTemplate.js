@@ -12,8 +12,18 @@ function fmtDate(d) {
   return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 }
 
-function modernTemplate(invoice, business) {
+function modernTemplate(invoice, business, themeConfig = null) {
   const biz   = business;
+  // ── Theme colours (custom overrides → built-in defaults) ──────────────────
+  const ACCENT  = themeConfig?.accentColor  || '#F59E0B';
+  const HDR_BG  = themeConfig?.headerBg     || '#111827';
+  const HDR_TXT = themeConfig?.headerText   || '#FFFFFF';
+  const FONT    = themeConfig?.fontFamily === 'serif' ? 'Georgia, serif'
+                : themeConfig?.fontFamily === 'mono'  ? '"Courier New", monospace'
+                : "'Segoe UI', Arial, sans-serif";
+  // Derived tints
+  const ACCENT_LIGHT = ACCENT + '22'; // 13% opacity hex approximation
+  const ACCENT_BORDER = ACCENT + '99';
   const party = invoice.partySnapshot;
   const items = invoice.items || [];
   const tot   = invoice.totals || {};
@@ -37,30 +47,30 @@ function modernTemplate(invoice, business) {
 <meta charset="UTF-8"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1F2937; background: #fff; }
+  body { font-family: ${FONT}; font-size: 12px; color: #1F2937; background: #fff; }
   .page { width: 210mm; min-height: 297mm; padding: 10mm 12mm; }
 
   /* Header */
-  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; padding-bottom:20px; border-bottom: 3px solid #F59E0B; }
-  .biz-name { font-size:22px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; padding-bottom:20px; border-bottom: 3px solid ${ACCENT}; }
+  .biz-name { font-size:22px; font-weight:800; color:${HDR_BG}; letter-spacing:-0.5px; }
   .biz-sub  { font-size:11px; color:#6B7280; margin-top:3px; }
-  .biz-gstin { display:inline-block; margin-top:6px; background:#FEF3C7; border:1px solid #F59E0B; border-radius:4px; padding:2px 8px; font-size:10px; font-weight:700; color:#92400E; }
+  .biz-gstin { display:inline-block; margin-top:6px; background:${ACCENT_LIGHT}; border:1px solid ${ACCENT}; border-radius:4px; padding:2px 8px; font-size:10px; font-weight:700; color:${HDR_BG}; }
   .invoice-badge { text-align:right; }
-  .invoice-type { font-size:13px; font-weight:700; color:#F59E0B; text-transform:uppercase; letter-spacing:1px; }
-  .invoice-no  { font-size:24px; font-weight:800; color:#111827; }
+  .invoice-type { font-size:13px; font-weight:700; color:${ACCENT}; text-transform:uppercase; letter-spacing:1px; }
+  .invoice-no  { font-size:24px; font-weight:800; color:${HDR_BG}; }
   .status-pill { display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; color:#fff; background:${statusColor}; margin-top:4px; }
 
   /* Party + Date Grid */
   .info-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
   .info-card { background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px; }
   .info-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#9CA3AF; font-weight:700; margin-bottom:4px; }
-  .info-value { font-size:12px; font-weight:600; color:#111827; }
+  .info-value { font-size:12px; font-weight:600; color:${HDR_BG}; }
   .info-sub   { font-size:10px; color:#6B7280; margin-top:2px; }
 
   /* Items Table */
   .items-section { margin-bottom:16px; }
   .items-table { width:100%; border-collapse:collapse; }
-  .items-table thead tr { background:#111827; color:#fff; }
+  .items-table thead tr { background:${HDR_BG}; color:${HDR_TXT}; }
   .items-table th { padding:7px 8px; font-size:10px; font-weight:700; text-align:left; }
   .items-table th.right { text-align:right; }
   .items-table th.center { text-align:center; }
@@ -78,13 +88,13 @@ function modernTemplate(invoice, business) {
   .bank-title { font-size:10px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
   .bank-row { display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px; }
   .bank-key { color:#6B7280; }
-  .bank-val { font-weight:600; color:#111827; }
+  .bank-val { font-weight:600; color:${HDR_BG}; }
 
   .totals-card { }
   .totals-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #F3F4F6; font-size:11px; }
-  .totals-row.taxable { background:#FEF3C7; padding:6px 8px; border-radius:4px; font-weight:700; margin:4px 0; border:none; }
-  .totals-row.grand { background:#111827; color:#fff; padding:10px 12px; border-radius:8px; margin-top:8px; font-size:14px; font-weight:800; border:none; }
-  .totals-row.grand .t-label { color:#F59E0B; }
+  .totals-row.taxable { background:${ACCENT_LIGHT}; padding:6px 8px; border-radius:4px; font-weight:700; margin:4px 0; border:none; }
+  .totals-row.grand { background:${HDR_BG}; color:${HDR_TXT}; padding:10px 12px; border-radius:8px; margin-top:8px; font-size:14px; font-weight:800; border:none; }
+  .totals-row.grand .t-label { color:${ACCENT}; }
   .tax-pills { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
   .tax-pill { flex:1; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px; padding:6px 8px; text-align:center; }
   .tax-pill.igst { background:#FFF7ED; border-color:#FED7AA; }

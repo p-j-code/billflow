@@ -108,6 +108,18 @@ const businessSchema = new mongoose.Schema({
     termsAndConditions: { type: String, trim: true },
     notes: { type: String, trim: true },
   },
+  // Custom Invoice Themes
+  invoiceThemes: [{
+    id:           { type: String, required: true },
+    name:         { type: String, required: true },
+    baseTemplate: { type: String, enum: ['traditional','modern'], default: 'modern' },
+    accentColor:  { type: String, default: '#F59E0B' },
+    headerBg:     { type: String, default: '#111827' },
+    headerText:   { type: String, default: '#FFFFFF' },
+    bodyText:     { type: String, default: '#1F2937' },
+    fontFamily:   { type: String, enum: ['default','serif','mono'], default: 'default' },
+    isDefault:    { type: Boolean, default: false },
+  }],
   // Assets
   logoUrl: { type: String },
   signatureUrl: { type: String },

@@ -10,12 +10,20 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'});
 }
 
-function buildTraditionalHtml({ invoice, business, items, totals, party, taxType, theme }) {
+function buildTraditionalHtml({ invoice, business, items, totals, party, taxType, theme, themeConfig }) {
   const showLot = business?.invoiceSettings?.showLotBatch !== false;
   const showHsn = business?.invoiceSettings?.showHsnOnInvoice !== false;
   const biz = business || {};
   const tot = totals || {};
   const grandTotal = tot.grandTotal || 0;
+
+  // ── Resolve theme colours ──────────────────────────────────────────────────
+  const ACCENT  = themeConfig?.accentColor || (theme === 'modern' ? '#F59E0B' : '#000000');
+  const HDR_BG  = themeConfig?.headerBg    || (theme === 'modern' ? '#111827' : '#000000');
+  const HDR_TXT = themeConfig?.headerText  || '#ffffff';
+  const T_FONT  = themeConfig?.fontFamily === 'serif' ? 'Georgia, serif'
+                : themeConfig?.fontFamily === 'mono'  ? '"Courier New", monospace'
+                : theme === 'modern' ? "'Segoe UI', Arial, sans-serif" : 'Arial, sans-serif';
 
   const docTitle = { sale:'TAX INVOICE', purchase:'PURCHASE INVOICE', credit_note:'CREDIT NOTE', proforma:'PROFORMA INVOICE' }[invoice.invoiceType] || 'TAX INVOICE';
   const emptyRows = Math.max(0, 10 - (items?.length || 0));
@@ -24,18 +32,18 @@ function buildTraditionalHtml({ invoice, business, items, totals, party, taxType
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1F2937;background:#fff;padding:16px;}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #F59E0B;}
-.biz-name{font-size:20px;font-weight:800;color:#111827;}.biz-sub{font-size:10px;color:#6B7280;margin-top:2px;}
-.biz-gstin{display:inline-block;margin-top:5px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;color:#92400E;}
-.inv-badge{text-align:right;}.inv-type{font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;}
-.inv-no{font-size:22px;font-weight:800;color:#111827;}
+body{font-family:${T_FONT};font-size:12px;color:#1F2937;background:#fff;padding:16px;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid ${ACCENT};}
+.biz-name{font-size:20px;font-weight:800;color:${HDR_BG};}.biz-sub{font-size:10px;color:#6B7280;margin-top:2px;}
+.biz-gstin{display:inline-block;margin-top:5px;background:${ACCENT}22;border:1px solid ${ACCENT};border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;color:${HDR_BG};}
+.inv-badge{text-align:right;}.inv-type{font-size:12px;font-weight:700;color:${ACCENT};text-transform:uppercase;}
+.inv-no{font-size:22px;font-weight:800;color:${HDR_BG};}
 .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
 .info-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:8px 10px;}
 .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#9CA3AF;font-weight:700;margin-bottom:3px;}
-.val{font-size:11px;font-weight:600;color:#111827;}.val-sub{font-size:9px;color:#6B7280;margin-top:1px;}
+.val{font-size:11px;font-weight:600;color:${HDR_BG};}.val-sub{font-size:9px;color:#6B7280;margin-top:1px;}
 table{width:100%;border-collapse:collapse;margin-bottom:12px;}
-thead tr{background:#111827;color:#fff;}th{padding:6px 8px;font-size:9px;font-weight:700;text-align:left;}
+thead tr{background:${HDR_BG};color:${HDR_TXT};}th{padding:6px 8px;font-size:9px;font-weight:700;text-align:left;}
 th.r{text-align:right;}th.c{text-align:center;}
 tbody tr{border-bottom:1px solid #F3F4F6;}tbody tr:nth-child(even){background:#FAFAFA;}
 td{padding:5px 8px;font-size:11px;}td.r{text-align:right;}td.c{text-align:center;}
@@ -43,9 +51,9 @@ td{padding:5px 8px;font-size:11px;}td.r{text-align:right;}td.c{text-align:center
 .lot{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:3px;padding:1px 4px;font-size:8px;color:#15803D;}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .totals .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #F3F4F6;font-size:11px;}
-.totals .taxable{background:#FEF3C7;padding:5px 8px;border-radius:4px;font-weight:700;margin:3px 0;border:none;}
-.totals .grand{background:#111827;color:#fff;padding:8px 12px;border-radius:6px;margin-top:6px;font-size:13px;font-weight:800;border:none;}
-.totals .grand .tl{color:#F59E0B;}
+.totals .taxable{background:${ACCENT}22;padding:5px 8px;border-radius:4px;font-weight:700;margin:3px 0;border:none;}
+.totals .grand{background:${HDR_BG};color:${HDR_TXT};padding:8px 12px;border-radius:6px;margin-top:6px;font-size:13px;font-weight:800;border:none;}
+.totals .grand .tl{color:${ACCENT};}
 .tax-pills{display:flex;gap:6px;margin-bottom:8px;}
 .tp{flex:1;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:5px;padding:5px 8px;text-align:center;}
 .tp.igst{background:#FFF7ED;border-color:#FED7AA;}
@@ -158,7 +166,7 @@ th{background:#f0f0f0;font-weight:bold;text-align:center;}
 .nb td{border:none;}.c{text-align:center;}.r{text-align:right;}.b{font-weight:bold;}
 .header-title{text-align:center;font-size:20px;font-weight:bold;letter-spacing:1px;}
 .gstin{text-align:center;font-size:11px;font-weight:bold;border:1px solid #000;padding:3px;margin:3px 0;}
-.grand td{background:#000;color:#fff;font-weight:bold;font-size:13px;}
+.grand td{background:${HDR_BG};color:${HDR_TXT};font-weight:bold;font-size:13px;}
 </style></head><body>
 <div style="border:2px solid #000;padding:5px;margin-bottom:3px;text-align:center">
   <div style="font-size:8px;margin-bottom:1px">${docTitle}</div>
@@ -228,12 +236,12 @@ ${biz.gstin?`<div class="gstin">GSTIN NO. : ${biz.gstin}</div>`:''}
 </body></html>`;
 }
 
-export default function InvoicePreview({ invoice, business, items, totals, party, taxType, theme = 'traditional', invoiceNo }) {
+export default function InvoicePreview({ invoice, business, items, totals, party, taxType, theme = 'traditional', invoiceNo, themeConfig = null }) {
   const iframeRef = useRef(null);
   const [scale, setScale]   = useState('desktop');
   const [loading, setLoading] = useState(true);
 
-  const html = buildTraditionalHtml({ invoice: { ...invoice, invoiceNo }, business, items, totals, party, taxType, theme });
+  const html = buildTraditionalHtml({ invoice: { ...invoice, invoiceNo }, business, items, totals, party, taxType, theme, themeConfig });
 
   useEffect(() => {
     if (!iframeRef.current) return;

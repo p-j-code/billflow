@@ -177,40 +177,52 @@ export default function HsnSearchPage() {
 
                 {/* Tax breakdown */}
                 <p className="text-xs text-muted uppercase tracking-wider font-semibold mb-3">Tax Rates</p>
-                <div className="space-y-2">
-                  {[
-                    ['IGST (Inter-state)', selected.igstRate, 'text-amber-400'],
-                    ['CGST (Intra-state)', selected.cgstRate, 'text-blue-400'],
-                    ['SGST (Intra-state)', selected.sgstRate, 'text-blue-400'],
-                  ].map(([label, rate, color]) => (
-                    <div key={label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <span className="text-xs text-secondary">{label}</span>
-                      <span className={clsx('text-sm font-bold font-mono', color)}>{rate}%</span>
-                    </div>
-                  ))}
-                </div>
+                {(() => {
+                  // Guard: seed ran insertMany (bypasses pre-save hook), so
+                  // cgstRate / sgstRate / igstRate may be undefined in DB.
+                  // Fall back to deriving them from gstRate client-side.
+                  const igst = selected.igstRate ?? selected.gstRate;
+                  const cgst = selected.cgstRate ?? (selected.gstRate / 2);
+                  const sgst = selected.sgstRate ?? (selected.gstRate / 2);
+                  return (
+                    <>
+                      <div className="space-y-2">
+                        {[
+                          ['IGST (Inter-state)', igst, 'text-amber-400'],
+                          ['CGST (Intra-state)', cgst, 'text-blue-400'],
+                          ['SGST (Intra-state)', sgst, 'text-blue-400'],
+                        ].map(([label, rateVal, color]) => (
+                          <div key={label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                            <span className="text-xs text-secondary">{label}</span>
+                            <span className={clsx('text-sm font-bold font-mono', color)}>{rateVal}%</span>
+                          </div>
+                        ))}
+                      </div>
 
-                <div className="mt-4 bg-surface border border-border rounded-xl p-3">
-                  <p className="text-xs text-muted mb-1">Example on ₹10,000</p>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-secondary">Taxable</span>
-                      <span className="text-primary font-mono">₹10,000</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-secondary">CGST {selected.cgstRate}%</span>
-                      <span className="text-primary font-mono">₹{(10000 * selected.cgstRate / 100).toFixed(0)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-secondary">SGST {selected.sgstRate}%</span>
-                      <span className="text-primary font-mono">₹{(10000 * selected.sgstRate / 100).toFixed(0)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-semibold border-t border-border pt-1 mt-1">
-                      <span className="text-primary">Total</span>
-                      <span className="text-amber-400 font-mono">₹{(10000 * (1 + selected.gstRate / 100)).toFixed(0)}</span>
-                    </div>
-                  </div>
-                </div>
+                      <div className="mt-4 bg-surface border border-border rounded-xl p-3">
+                        <p className="text-xs text-muted mb-1">Example on ₹10,000</p>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-secondary">Taxable</span>
+                            <span className="text-primary font-mono">₹10,000</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-secondary">CGST {cgst}%</span>
+                            <span className="text-primary font-mono">₹{(10000 * cgst / 100).toFixed(0)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-secondary">SGST {sgst}%</span>
+                            <span className="text-primary font-mono">₹{(10000 * sgst / 100).toFixed(0)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs font-semibold border-t border-border pt-1 mt-1">
+                            <span className="text-primary">Total</span>
+                            <span className="text-amber-400 font-mono">₹{(10000 * (1 + selected.gstRate / 100)).toFixed(0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {selected.category && (
                   <div className="mt-4 flex items-start gap-2 text-xs text-muted">
