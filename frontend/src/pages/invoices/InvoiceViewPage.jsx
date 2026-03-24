@@ -142,21 +142,25 @@ export default function InvoiceViewPage() {
       const contentType = res.headers["content-type"] || "";
 
       if (contentType.includes("text/html")) {
-        // Puppeteer not available on this server — backend streamed raw HTML.
-        // Open it in a new tab so the user can use the browser's Print → Save as PDF.
-        const url = URL.createObjectURL(
-          new Blob([res.data], { type: "text/html" }),
+        // Puppeteer unavailable — inject an auto-print script so the browser's
+        // Print dialog opens immediately. User selects "Save as PDF" to download.
+        const htmlText = await res.data.text();
+        const printReady = htmlText.replace(
+          "</body>",
+          `<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},300);});<\/script></body>`,
         );
+        const blob = new Blob([printReady], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
         const tab = window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
         if (!tab) {
-          toast.error("Pop-up blocked — please allow pop-ups for this site", {
+          toast.error("Pop-up blocked — allow pop-ups then try again", {
             id: toastId,
           });
         } else {
-          toast.success("Opened in new tab — use Print → Save as PDF", {
+          toast.success("Print dialog opening — choose 'Save as PDF'", {
             id: toastId,
-            duration: 5000,
+            duration: 4000,
           });
         }
       } else {

@@ -162,21 +162,24 @@ export default function InvoiceListPage() {
       const contentType = res.headers["content-type"] || "";
 
       if (contentType.includes("text/html")) {
-        const url = URL.createObjectURL(
-          new Blob([res.data], { type: "text/html" }),
+        const htmlText = await res.data.text();
+        const printReady = htmlText.replace(
+          "</body>",
+          `<script>window.addEventListener(\'load\',function(){setTimeout(function(){window.print();},300);});<\/script></body>`,
         );
+        const blob = new Blob([printReady], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
         const tab = window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
         if (!tab) {
-          toast.error(
-            "Pop-up blocked \u2014 please allow pop-ups for this site",
-            { id: toastId },
-          );
+          toast.error("Pop-up blocked \u2014 allow pop-ups then try again", {
+            id: toastId,
+          });
         } else {
-          toast.success(
-            "Opened in new tab \u2014 use Print \u2192 Save as PDF",
-            { id: toastId, duration: 5000 },
-          );
+          toast.success("Print dialog opening \u2014 choose 'Save as PDF'", {
+            id: toastId,
+            duration: 4000,
+          });
         }
       } else {
         const url = URL.createObjectURL(

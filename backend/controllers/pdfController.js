@@ -57,8 +57,13 @@ const generatePdf = async (req, res, next) => {
       });
       return res.send(pdfBuffer);
     } catch (puppeteerErr) {
-      console.warn('Puppeteer unavailable, streaming HTML:', puppeteerErr.message);
-      res.set('Content-Type', 'text/html');
+      // Puppeteer not installed — stream raw HTML so the frontend can open it
+      // in a new tab and the user can use Print → Save as PDF.
+      console.warn('Puppeteer unavailable, streaming HTML fallback:', puppeteerErr.message);
+      res.set({
+        'Content-Type': 'text/html; charset=utf-8',
+        'X-PDF-Fallback': 'true',
+      });
       return res.send(html);
     }
   } catch (err) { next(err); }
