@@ -1,0 +1,11 @@
+const express = require('express');
+const router  = express.Router();
+const { protect, requireBusiness } = require('../middleware/auth');
+const { listUsers, inviteUser, changeRole, removeMember, getRoles } = require('../controllers/usersController');
+router.use(protect, requireBusiness);
+router.get('/roles',          getRoles);
+router.get('/',               listUsers);
+router.post('/invite',        inviteUser);
+router.patch('/:userId/role', changeRole);
+router.delete('/:userId',     removeMember);
+module.exports = router;
