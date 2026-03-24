@@ -28,6 +28,25 @@ function traditionalTemplate(invoice, business, themeConfig = null) {
   const HDR_BG = themeConfig?.headerBg || "#000000";
   const HDR_TXT = themeConfig?.headerText || "#ffffff";
   const BODY_TXT = themeConfig?.bodyText || "#000000";
+  const BRD_COLOR = themeConfig?.borderColor || "#000000";
+  const BRD_STYLE =
+    themeConfig?.borderStyle === "dashed"
+      ? "dashed"
+      : themeConfig?.borderStyle === "double"
+        ? "double"
+        : "solid";
+  const BRD_W =
+    themeConfig?.borderWidth === "thin"
+      ? "0.5px"
+      : themeConfig?.borderWidth === "thick"
+        ? "2px"
+        : "1px";
+  const BRD_W_OUTER =
+    themeConfig?.borderWidth === "thin"
+      ? "1px"
+      : themeConfig?.borderWidth === "thick"
+        ? "3px"
+        : "2px";
   const FONT =
     themeConfig?.fontFamily === "serif"
       ? "Georgia, serif"
@@ -61,13 +80,13 @@ function traditionalTemplate(invoice, business, themeConfig = null) {
   body { font-family: ${FONT}; font-size: 11px; color: ${BODY_TXT}; background: #fff; }
   .page { width: 210mm; min-height: 297mm; padding: 8mm; }
   table { width: 100%; border-collapse: collapse; }
-  td, th { border: 1px solid #000; padding: 3px 5px; }
+  td, th { border: ${BRD_W} ${BRD_STYLE} ${BRD_COLOR}; padding: 3px 5px; }
   th { background: #f0f0f0; font-weight: bold; text-align: center; }
   .no-border td { border: none; }
   .header-title { text-align: center; font-size: 22px; font-weight: bold; letter-spacing: 2px; padding: 6px 0; }
   .header-sub   { text-align: center; font-size: 12px; padding: 2px 0; }
   .header-addr  { text-align: center; font-size: 10px; padding: 2px 0; }
-  .gstin-box    { text-align: center; font-size: 12px; font-weight: bold; border: 1px solid #000; padding: 4px; margin: 4px 0; }
+  .gstin-box    { text-align: center; font-size: 12px; font-weight: bold; border: ${BRD_W} ${BRD_STYLE} ${BRD_COLOR}; padding: 4px; margin: 4px 0; }
   .label        { font-size: 9px; color: #555; }
   .value        { font-weight: 600; }
   .amt          { text-align: right; }
@@ -84,7 +103,7 @@ function traditionalTemplate(invoice, business, themeConfig = null) {
 <body>
 <div class="page">
   <!-- Header -->
-  <div style="text-align:center; border: 2px solid #000; padding: 6px; margin-bottom: 4px;">
+  <div style="text-align:center; border: ${BRD_W_OUTER} ${BRD_STYLE} ${BRD_COLOR}; padding: 6px; margin-bottom: 4px;">
     <div style="font-size:9px; margin-bottom:2px;">${docTitle}</div>
     <div class="header-title">${biz.name || ""}</div>
     ${biz.legalName ? `<div class="header-sub">${biz.legalName}</div>` : ""}
@@ -224,7 +243,7 @@ function traditionalTemplate(invoice, business, themeConfig = null) {
   </table>
 
   <!-- Amount in words -->
-  <div style="border:1px solid #000; border-top:none; padding:4px 6px; font-size:10px;">
+  <div style="border:${BRD_W} ${BRD_STYLE} ${BRD_COLOR}; border-top:none; padding:4px 6px; font-size:10px;">
     <b>Amount in Words:</b> ${tot.grandTotalWords || ""}
   </div>
 
@@ -232,7 +251,7 @@ function traditionalTemplate(invoice, business, themeConfig = null) {
   ${
     invoice.termsAndConditions
       ? `
-  <div style="border:1px solid #000; border-top:none; padding:4px 6px; font-size:9px;">
+  <div style="border:${BRD_W} ${BRD_STYLE} ${BRD_COLOR}; border-top:none; padding:4px 6px; font-size:9px;">
     <b>Terms & Conditions:</b><br/>${invoice.termsAndConditions.replace(/\n/g, "<br/>")}
   </div>`
       : ""

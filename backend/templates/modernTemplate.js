@@ -30,6 +30,13 @@ function modernTemplate(invoice, business, themeConfig = null) {
   const HDR_BG = themeConfig?.headerBg || "#111827";
   const HDR_TXT = themeConfig?.headerText || "#FFFFFF";
   const BODY_TXT = themeConfig?.bodyText || "#1F2937";
+  const BRD_COLOR_MODERN = themeConfig?.borderColor || "#E5E7EB";
+  const BRD_STYLE_MODERN =
+    themeConfig?.borderStyle === "dashed"
+      ? "dashed"
+      : themeConfig?.borderStyle === "double"
+        ? "double"
+        : "solid";
   const FONT =
     themeConfig?.fontFamily === "serif"
       ? "Georgia, serif"
@@ -85,7 +92,7 @@ function modernTemplate(invoice, business, themeConfig = null) {
 
   /* Party + Date Grid */
   .info-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
-  .info-card { background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px; }
+  .info-card { background:#F9FAFB; border:1px ${BRD_STYLE_MODERN} ${BRD_COLOR_MODERN}; border-radius:8px; padding:10px 12px; }
   .info-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#9CA3AF; font-weight:700; margin-bottom:4px; }
   .info-value { font-size:12px; font-weight:600; color:${HDR_BG}; }
   .info-sub   { font-size:10px; color:#6B7280; margin-top:2px; }
@@ -97,7 +104,7 @@ function modernTemplate(invoice, business, themeConfig = null) {
   .items-table th { padding:7px 8px; font-size:10px; font-weight:700; text-align:left; }
   .items-table th.right { text-align:right; }
   .items-table th.center { text-align:center; }
-  .items-table tbody tr { border-bottom:1px solid #F3F4F6; }
+  .items-table tbody tr { border-bottom:1px solid ${BRD_COLOR_MODERN}; }
   .items-table tbody tr:nth-child(even) { background:#FAFAFA; }
   .items-table td { padding:6px 8px; font-size:11px; }
   .items-table td.right  { text-align:right; }
@@ -107,14 +114,14 @@ function modernTemplate(invoice, business, themeConfig = null) {
 
   /* Totals */
   .bottom-section { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  .bank-card { background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:12px; }
+  .bank-card { background:#F9FAFB; border:1px ${BRD_STYLE_MODERN} ${BRD_COLOR_MODERN}; border-radius:8px; padding:12px; }
   .bank-title { font-size:10px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
   .bank-row { display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px; }
   .bank-key { color:#6B7280; }
   .bank-val { font-weight:600; color:${HDR_BG}; }
 
   .totals-card { }
-  .totals-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #F3F4F6; font-size:11px; }
+  .totals-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid ${BRD_COLOR_MODERN}; font-size:11px; }
   .totals-row.taxable { background:${ACCENT_LIGHT}; padding:6px 8px; border-radius:4px; font-weight:700; margin:4px 0; border:none; }
   .totals-row.grand { background:${HDR_BG}; color:${HDR_TXT}; padding:10px 12px; border-radius:8px; margin-top:8px; font-size:14px; font-weight:800; border:none; }
   .totals-row.grand .t-label { color:${ACCENT}; }
@@ -129,7 +136,7 @@ function modernTemplate(invoice, business, themeConfig = null) {
   .words-box { background:#ECFDF5; border:1px solid #A7F3D0; border-radius:6px; padding:8px 10px; margin-top:12px; font-size:10px; color:#065F46; font-weight:600; }
 
   /* Footer */
-  .footer { margin-top:20px; padding-top:16px; border-top:2px solid #E5E7EB; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .footer { margin-top:20px; padding-top:16px; border-top:2px solid ${BRD_COLOR_MODERN}; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .sig-block { text-align:center; }
   .sig-line { border-top:1px solid #9CA3AF; margin-top:28px; padding-top:6px; font-size:10px; color:#6B7280; }
   .footer-note { text-align:center; font-size:9px; color:#9CA3AF; margin-top:12px; }
@@ -283,7 +290,7 @@ function modernTemplate(invoice, business, themeConfig = null) {
   ${
     invoice.termsAndConditions
       ? `
-  <div style="margin-top:12px; padding:8px 10px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:6px; font-size:9px; color:#6B7280;">
+  <div style="margin-top:12px; padding:8px 10px; background:#F9FAFB; border:1px ${BRD_STYLE_MODERN} ${BRD_COLOR_MODERN}; border-radius:6px; font-size:9px; color:#6B7280;">
     <b style="color:#374151;">Terms & Conditions:</b><br/>${invoice.termsAndConditions.replace(/\n/g, "<br/>")}
   </div>`
       : ""

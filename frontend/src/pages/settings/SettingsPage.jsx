@@ -849,6 +849,17 @@ const FONT_OPTIONS = [
   { value: "mono", label: "Monospace (Courier)" },
 ];
 
+const PRESET_BORDERS = [
+  { label: "Black", value: "#000000" },
+  { label: "Charcoal", value: "#374151" },
+  { label: "Slate", value: "#64748B" },
+  { label: "Cool Gray", value: "#9CA3AF" },
+  { label: "Light Gray", value: "#D1D5DB" },
+  { label: "Soft", value: "#E5E7EB" },
+  { label: "Blue Gray", value: "#1E3A5F" },
+  { label: "Warm", value: "#78350F" },
+];
+
 function newTheme(overrides = {}) {
   return {
     id: crypto.randomUUID(),
@@ -859,6 +870,9 @@ function newTheme(overrides = {}) {
     headerText: "#FFFFFF",
     bodyText: "#1F2937",
     fontFamily: "default",
+    borderColor: "#000000",
+    borderStyle: "solid",
+    borderWidth: "normal",
     isDefault: false,
     ...overrides,
   };
@@ -1149,6 +1163,85 @@ function ThemeEditor({ theme, onChange, onClose, isNew }) {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Border Color */}
+            <div>
+              <label className="label">Border Colour</label>
+              <p className="text-xs text-muted mb-2">
+                Table cell &amp; card borders
+              </p>
+              <ColorSwatch
+                value={draft.borderColor || "#000000"}
+                selected={draft.borderColor || "#000000"}
+                onChange={(v) => set("borderColor", v)}
+                presets={PRESET_BORDERS}
+              />
+            </div>
+
+            {/* Border Style */}
+            <div>
+              <label className="label">Border Style</label>
+              <div className="flex gap-2 mt-1">
+                {[
+                  { v: "solid", l: "Solid", hint: "─────" },
+                  { v: "dashed", l: "Dashed", hint: "- - - -" },
+                  { v: "double", l: "Double", hint: "═════" },
+                ].map((s) => (
+                  <button
+                    key={s.v}
+                    onClick={() => set("borderStyle", s.v)}
+                    className={clsx(
+                      "flex-1 border rounded-xl p-2 text-left transition-all",
+                      (draft.borderStyle || "solid") === s.v
+                        ? "border-amber-500 bg-amber-500/10"
+                        : "border-border hover:border-amber-500/40",
+                    )}
+                  >
+                    <p
+                      className={clsx(
+                        "font-semibold text-xs",
+                        (draft.borderStyle || "solid") === s.v
+                          ? "text-amber-400"
+                          : "text-primary",
+                      )}
+                    >
+                      {s.l}
+                    </p>
+                    <p className="text-[10px] text-muted mt-0.5 font-mono tracking-widest">
+                      {s.hint}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Border Weight */}
+            <div>
+              <label className="label">Border Weight</label>
+              <div className="flex gap-2 mt-1">
+                {[
+                  { v: "thin", l: "Thin", sub: "0.5px" },
+                  { v: "normal", l: "Normal", sub: "1px" },
+                  { v: "thick", l: "Thick", sub: "2px" },
+                ].map((w) => (
+                  <button
+                    key={w.v}
+                    onClick={() => set("borderWidth", w.v)}
+                    className={clsx(
+                      "flex-1 px-3 py-2 rounded-xl text-xs font-semibold border transition-all",
+                      (draft.borderWidth || "normal") === w.v
+                        ? "border-amber-500 text-amber-400 bg-amber-500/10"
+                        : "border-border text-secondary hover:border-amber-500/40",
+                    )}
+                  >
+                    {w.l}
+                    <span className="block text-[9px] font-normal text-muted mt-0.5">
+                      {w.sub}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Default toggle */}

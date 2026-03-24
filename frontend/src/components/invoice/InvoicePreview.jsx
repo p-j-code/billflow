@@ -44,6 +44,27 @@ function buildTraditionalHtml({
     themeConfig?.headerBg || (theme === "modern" ? "#111827" : "#000000");
   const HDR_TXT = themeConfig?.headerText || "#ffffff";
   const BODY_TXT = themeConfig?.bodyText || "#1F2937";
+  const BRD_COLOR = themeConfig?.borderColor || "#000000";
+  const BRD_STYLE =
+    themeConfig?.borderStyle === "dashed"
+      ? "dashed"
+      : themeConfig?.borderStyle === "double"
+        ? "double"
+        : "solid";
+  const BRD_W =
+    themeConfig?.borderWidth === "thin"
+      ? "0.5px"
+      : themeConfig?.borderWidth === "thick"
+        ? "2px"
+        : "1px";
+  const BRD_W_OUTER =
+    themeConfig?.borderWidth === "thin"
+      ? "1px"
+      : themeConfig?.borderWidth === "thick"
+        ? "3px"
+        : "2px";
+  // Modern uses a softer border by default
+  const BRD_COLOR_MODERN = themeConfig?.borderColor || "#E5E7EB";
   const T_FONT =
     themeConfig?.fontFamily === "serif"
       ? "Georgia, serif"
@@ -73,18 +94,18 @@ body{font-family:${T_FONT};font-size:12px;color:${BODY_TXT};background:#fff;padd
 .inv-badge{text-align:right;}.inv-type{font-size:12px;font-weight:700;color:${ACCENT};text-transform:uppercase;}
 .inv-no{font-size:22px;font-weight:800;color:${HDR_BG};}
 .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
-.info-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:8px 10px;}
+.info-card{background:#F9FAFB;border:1px ${BRD_STYLE} ${BRD_COLOR_MODERN};border-radius:6px;padding:8px 10px;}
 .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#9CA3AF;font-weight:700;margin-bottom:3px;}
 .val{font-size:11px;font-weight:600;color:${HDR_BG};}.val-sub{font-size:9px;color:#6B7280;margin-top:1px;}
 table{width:100%;border-collapse:collapse;margin-bottom:12px;}
 thead tr{background:${HDR_BG};color:${HDR_TXT};}th{padding:6px 8px;font-size:9px;font-weight:700;text-align:left;}
 th.r{text-align:right;}th.c{text-align:center;}
-tbody tr{border-bottom:1px solid #F3F4F6;}tbody tr:nth-child(even){background:#FAFAFA;}
+tbody tr{border-bottom:1px solid ${BRD_COLOR_MODERN};}tbody tr:nth-child(even){background:#FAFAFA;}
 td{padding:5px 8px;font-size:11px;}td.r{text-align:right;}td.c{text-align:center;}
 .hsn{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:3px;padding:1px 4px;font-size:8px;color:#1D4ED8;font-weight:700;}
 .lot{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:3px;padding:1px 4px;font-size:8px;color:#15803D;}
 .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.totals .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #F3F4F6;font-size:11px;}
+.totals .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid ${BRD_COLOR_MODERN};font-size:11px;}
 .totals .taxable{background:${ACCENT}22;padding:5px 8px;border-radius:4px;font-weight:700;margin:3px 0;border:none;}
 .totals .grand{background:${HDR_BG};color:${HDR_TXT};padding:8px 12px;border-radius:6px;margin-top:6px;font-size:13px;font-weight:800;border:none;}
 .totals .grand .tl{color:${ACCENT};}
@@ -94,9 +115,9 @@ td{padding:5px 8px;font-size:11px;}td.r{text-align:right;}td.c{text-align:center
 .tp-l{font-size:8px;color:#6B7280;font-weight:700;text-transform:uppercase;}
 .tp-v{font-size:12px;font-weight:800;color:#1D4ED8;}.tp.igst .tp-v{color:#C2410C;}
 .words{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:5px;padding:6px 8px;margin-top:8px;font-size:9px;color:#065F46;font-weight:600;}
-.bank-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px;}
+.bank-card{background:#F9FAFB;border:1px ${BRD_STYLE} ${BRD_COLOR_MODERN};border-radius:6px;padding:10px;}
 .bank-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;}
-.sig{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;padding-top:12px;border-top:2px solid #E5E7EB;}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;padding-top:12px;border-top:2px solid ${BRD_COLOR_MODERN};}
 .sig-b{text-align:center;}.sig-l{border-top:1px solid #9CA3AF;margin-top:24px;padding-top:4px;font-size:9px;color:#6B7280;}
 .footer-note{text-align:center;font-size:8px;color:#9CA3AF;margin-top:10px;}
 </style></head><body>
@@ -216,14 +237,14 @@ td{padding:5px 8px;font-size:11px;}td.r{text-align:right;}td.c{text-align:center
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:${T_FONT};font-size:11px;color:${BODY_TXT};background:#fff;padding:8px;}
-table{width:100%;border-collapse:collapse;}td,th{border:1px solid #000;padding:3px 5px;}
+table{width:100%;border-collapse:collapse;}td,th{border:${BRD_W} ${BRD_STYLE} ${BRD_COLOR};padding:3px 5px;}
 th{background:#f0f0f0;font-weight:bold;text-align:center;}
 .nb td{border:none;}.c{text-align:center;}.r{text-align:right;}.b{font-weight:bold;}
 .header-title{text-align:center;font-size:20px;font-weight:bold;letter-spacing:1px;}
-.gstin{text-align:center;font-size:11px;font-weight:bold;border:1px solid #000;padding:3px;margin:3px 0;}
+.gstin{text-align:center;font-size:11px;font-weight:bold;border:${BRD_W} ${BRD_STYLE} ${BRD_COLOR};padding:3px;margin:3px 0;}
 .grand td{background:${HDR_BG};color:${HDR_TXT};font-weight:bold;font-size:13px;}
 </style></head><body>
-<div style="border:2px solid #000;padding:5px;margin-bottom:3px;text-align:center">
+<div style="border:${BRD_W_OUTER} ${BRD_STYLE} ${BRD_COLOR};padding:5px;margin-bottom:3px;text-align:center">
   <div style="font-size:8px;margin-bottom:1px">${docTitle}</div>
   <div class="header-title">${biz.name || "Your Business"}</div>
   <div style="font-size:10px">${[biz.address?.line1, biz.address?.city, biz.address?.state].filter(Boolean).join(", ")}</div>
@@ -297,7 +318,7 @@ ${biz.gstin ? `<div class="gstin">GSTIN NO. : ${biz.gstin}</div>` : ""}
   ${tot.roundOff ? `<tr><td>Round Off</td><td class="r">${fmt(tot.roundOff)}</td></tr>` : ""}
   <tr class="grand"><td class="b">GRAND TOTAL</td><td class="r b" style="font-size:14px">₹${fmtI(grandTotal)}</td></tr>
 </table>
-<div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px"><b>Amount in Words:</b> ${numberToWords(grandTotal)}</div>
+<div style="border:${BRD_W} ${BRD_STYLE} ${BRD_COLOR};border-top:none;padding:3px 6px;font-size:9px"><b>Amount in Words:</b> ${numberToWords(grandTotal)}</div>
 <table style="margin-top:6px;border:none"><tr>
   <td style="border:none;width:50%;text-align:center;padding-top:24px"><div style="border-top:1px solid #000;display:inline-block;width:70%;padding-top:3px;font-size:9px">authorised signature</div></td>
   <td style="border:none;width:50%;text-align:center;padding-top:24px"><div style="border-top:1px solid #000;display:inline-block;width:70%;padding-top:3px;font-size:9px;font-weight:bold">FOR: ${biz.name || ""}<br/><span style="font-weight:normal">authorised signature</span></div></td>
