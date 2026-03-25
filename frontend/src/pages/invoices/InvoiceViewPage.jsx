@@ -46,6 +46,24 @@ const fmtD = (d) =>
       })
     : "—";
 
+/**
+ * Resolves the themeConfig to pass to <InvoicePreview>.
+ * Mirrors the priority used in pdfController.resolveThemeConfig:
+ *  1. Live theme from businessData.invoiceThemes  — preferred (always up-to-date)
+ *  2. invoice.pdfThemeConfig snapshot             — fallback if theme was deleted
+ *  3. null                                        — template built-in defaults
+ */
+function resolvePreviewTheme(invoice, businessData) {
+  if (invoice?.pdfThemeId && businessData?.invoiceThemes?.length) {
+    const live = businessData.invoiceThemes.find(
+      (t) => t.id === invoice.pdfThemeId,
+    );
+    if (live) return live;
+  }
+  if (invoice?.pdfThemeConfig?.accentColor) return invoice.pdfThemeConfig;
+  return null;
+}
+
 const STATUS_CONFIG = {
   draft: { color: "text-muted", badge: "muted", label: "Draft" },
   sent: { color: "text-info", badge: "blue", label: "Sent" },
@@ -635,15 +653,7 @@ export default function InvoiceViewPage() {
                 party={invoice.partySnapshot}
                 taxType={invoice.taxType}
                 theme={invoice.pdfTheme || "traditional"}
-                themeConfig={
-                  invoice.pdfThemeConfig?.accentColor
-                    ? invoice.pdfThemeConfig
-                    : invoice.pdfThemeId && businessData?.invoiceThemes?.length
-                      ? (businessData.invoiceThemes.find(
-                          (t) => t.id === invoice.pdfThemeId,
-                        ) ?? null)
-                      : null
-                }
+                themeConfig={resolvePreviewTheme(invoice, businessData)}
               />
             </div>
           )}
